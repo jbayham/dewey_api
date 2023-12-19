@@ -78,31 +78,9 @@ api_list_files <- function(access_token=NULL,endpoint){
 }
   
   
-#function to build out directory structure where data will be downloaded
-build_dir <- function(target_dir){
-  
-  require(dplyr)
-  require(stringr)
-  require(purrr)
-  
-  #check whether parent target directory exists
-  if(!dir.exists(target_dir)) dir.create(target_dir)
-  
-  if(dir.exists(target_dir)){
-    #check existing directories
-    existing_dir = dir(target_dir)
-    
-    #create directories based on partition key if they don't exist
-    unique(file_list$partition_key) %>%
-      str_subset(existing_dir,negate = TRUE) %>%
-      map(.,~dir.create(paste0(target_dir,.)))
-  }
-  
-}
-
 
 #download data, read in files and write them as parquet
-download_data <- function(target_dir,file_list){
+download_data <- function(target_dir,file_list,convert_parquet=TRUE,rstor_sync){
   
   require(tools)
   require(progress)
@@ -135,8 +113,7 @@ download_data <- function(target_dir,file_list){
     }
     
     if(str_detect(list.files(target_dir,pattern = match_name,recursive = TRUE),".csv.gz")){
-      temp_df <- fread(target_name_path,keepLeadingZeros = T)
-      temp_df2 <- read_csv(target_name_path)
+      temp_df <- read_csv(target_name_path)
       write_parquet(temp_df,str_replace(target_name_path,".csv.gz",".parquet"))
       file.remove(target_name_path)
     }
