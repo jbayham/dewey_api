@@ -32,7 +32,7 @@ get_token <- function(){
 #endpoint=target_endpoint
 api_list_files <- function(access_token=NULL,endpoint){
   
-  require(httr)
+  require(dplyr)
   require(httr2)
   require(jsonlite)
 
@@ -108,6 +108,7 @@ download_data <- function(target_dir,file_list){
   require(progress)
   require(stringr)
   require(dplyr)
+  require(readr)
   require(purrr)
   require(data.table)
   require(arrow)
@@ -121,18 +122,21 @@ download_data <- function(target_dir,file_list){
   #loop through undownloaded files and download them
   for(i in 1:file_num){
     pb$tick()
-    target_name_path <- paste0(target_dir,files_to_download$partition_key[i],"/",files_to_download$file_name[i])
+    target_name_path <- paste0(target_dir,file_list$partition_key[i],"/",file_list$file_name[i])
     match_name <- file_path_sans_ext(file_path_sans_ext(basename(target_name_path))) #removing ext twice because csv.gz
+    
+    if(!dir.exists(dirname(target_name_path))) dir.create(dirname(target_name_path))
     
     #Download file if it doesn't exist on the drive
     if(is_empty(list.files(target_dir,pattern = match_name,recursive = TRUE))){
-      download.file(url=files_to_download$link[i],
+      download.file(url=file_list$link[i],
                     destfile = target_name_path,
                     quiet = TRUE)
     }
     
     if(str_detect(list.files(target_dir,pattern = match_name,recursive = TRUE),".csv.gz")){
       temp_df <- fread(target_name_path,keepLeadingZeros = T)
+      temp_df2 <- read_csv(target_name_path)
       write_parquet(temp_df,str_replace(target_name_path,".csv.gz",".parquet"))
       file.remove(target_name_path)
     }

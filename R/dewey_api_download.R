@@ -5,22 +5,36 @@ p_load(tidyverse,jsonlite,httr,lubridate,RCurl)
 
 source("R/api_functions.R")
 
+end_points <- readr::read_csv("R/inputs/api_endpoints.csv")
+
+j=3
 #Setting parameters
-target_dir = "/DATA/restricted_data/" #the directory where files will be downloaded
-target_prefix = "safegraph_sp_tran_panel"  #the unique file type identifier (e.g., "advan_mp_normalization")
-file_ext = ".csv" #the file extension
-base_url = "https://marketplace.deweydata.io"
+target_dir = paste0("/DATA/restricted_data/dewey/",end_points$target_dir[j],"/") #the directory where files will be downloaded
+#target_prefix = "safegraph_sp_tran_panel"  #the unique file type identifier (e.g., "advan_mp_normalization")
+#file_ext = ".csv" #the file extension
+target_endpoint = end_points$target_endpoint[j]
 
 
-#Get token
+#Get token - I've stored this key as an environmental variable
 jb_access_token = Sys.getenv("DEWEY_API_KEY")
 
-#Query full list of downloadable files - be patient
-file_list <- api_list_files(access_token = jb_access_token)$download_links
+#Query full list of downloadable files from specified endpoint
+file_list <- api_list_files(access_token = jb_access_token,
+                            endpoint = target_endpoint)
 
 
-download.file(url=file_list$link[1],
-              destfile = paste0(target_dir,file_list$file_name[1]))
+#Setup directory structure according to partition key
+#build_dir(target_dir)
+
+#Download files in list
+download_data(target_dir=target_dir,file_list=file_list)
+
+#
+
+
+
+
+
 
 
 

@@ -1,20 +1,17 @@
-#This script reads in the parts of the core file and translates them into parquet for easier query
 
-
-setwd("/RSTOR/restricted_data/dewey")
 
 library(pacman)
 p_load(tidyverse,arrow,data.table,tools,progress,furrr)
 
-#from_dir="spend"
-#to_dir="spend_parquet"
-from_dir="advan_month_patterns"
-to_dir="advan_month_patterns_parquet"
+from_dir="spend"
+to_dir="spend_parquet"
+# from_dir="advan_month_patterns"
+# to_dir="advan_month_patterns_parquet"
 from_file_ext = ".csv.gz"
 to_file_ext = ".parquet"
 
 #Check if from dir is correct
-dir.exists(from_dir)
+dir.exists(target_dir)
 
 #Create to_dir if one does not exist
 if(!dir.exists(to_dir)) dir.create(to_dir)
